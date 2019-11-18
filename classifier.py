@@ -1,12 +1,12 @@
-import glob
+import cv2
 import matplotlib.pyplot as plt
 import random
 import numpy as np
+from os import walk
 
 
 def loadImg(path):
     img = cv2.imread(path)
-    img = cv2.resize(img, tuple((500, 500)))
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 
@@ -29,27 +29,16 @@ def hog(img, B):
     return hist
 
 
-def load_data(path, clase):
-    train = [cv2.imread(file) for file in glob.glob(path + '/Train/*')]
-    test = [cv2.imread(file) for file in glob.glob(path + '/Test/*')]
-
-    target = [clase for i in range(len(train))]  # class
-
-    return train, target, test
-
-
-def full_data(paths):
+def full_data(paths_ts, paths_tr):
     train = []
     target = []
     test = []
-    clase = 1
 
-    for path in paths:
-        a, b, c = load_data(path, clase)
+    for clase in range(1, 4):
+        a, b, c = load_data(paths_ts[clase - 1], paths_tr[clase - 1], clase)
         train += a
         target += b
         test += c
-        clase += 1
         print(len(a), len(b))
 
     train = np.vstack(train)
@@ -81,11 +70,52 @@ def correctness_predictor(svm, test):
     return (correct*100.0/result.size)
 
 
-def predict_class(img):
+def predict_class(img, svm, hist):
     hist = hog(img, 16)
     hist = np.float32(hist)
     return int(svm.predict(hist.reshape(1, 64))[1][0][0])
 
 
-paths = ['FuitsDB/Mangoes', 'FruitsDB/Apples', 'FuitsDB/Oranges']
-a, b, c = full_data(paths)
+def get_imgs(mypath, arr):
+    f = []
+    imgs = []
+    c = 0
+    for (dirpath, dirnames, filenames) in walk(mypath):
+        f.extend(filenames)
+        break
+
+    for e in f:
+        arr.append(loadImg(mypath + "/" + e))
+        c += 1
+
+    return arr, c
+
+
+def load_dataset(d_train, d_test):
+    train = []
+    test = []
+    target = []
+    for i in range(3):
+        train, c = get_imgs(d_train[i], train)
+        for j in range(c):
+            target.append(i)
+        test, c = get_imgs(d_test[i], test)
+
+    train = np.vstack(train)
+    target = np.vstack(target)
+    test = np.vstack(test)
+
+    train = np.float32(train)
+    test = np.float32(test)
+
+    return train, test, target
+
+
+d_train = ['FruitsDB/Apples/Test',
+           'FruitsDB/Mangoes/Test', 'FruitsDB/Oranges/Test']
+
+d_test = ['FruitsDB/Apples/Train',
+          'FruitsDB/Mangoes/Train', 'FruitsDB/Oranges/Train']
+
+train, test, target = load_dataset(d_train, d_test)
+print(train.shape, test.shape, target.shape)
