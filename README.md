@@ -1,4 +1,4 @@
-# Fruit Classification 
+# Fruit Recognition 
 
 Dataset: Train and test images splited  77%, 33% of Apples, Mangoes and Oranges
 Two approaches for comparing results: KNN and Supporting Vector Machine for classifing the Fruits. Before that we used some image processing for making the results of the classification better. For that thresholding and Rescaling the Image Intensity were used.
