@@ -14,22 +14,22 @@ The results were:
 
 
 Now, some theory of the things used
-## Preprocessing: Thresholding and Rescaling Intensity
+### Preprocessing: Thresholding and Rescaling Intensity
 
 The input to a thresholding operation is typically a grayscale or color image. In the simplest implementation, the output is a binary image representing the segmentation. Black pixels correspond to background and white pixels correspond to foreground (or vice versa). In simple implementations, the segmentation is determined by a single parameter known as the intensity threshold. In a single pass, each pixel in the image is compared with this threshold. If the pixel's intensity is higher than the threshold, the pixel is set to, say, white in the output. If it is less than the threshold, it is set to black.
 
-## Histogram of Oriented Gradients (HOG)
+### Histogram of Oriented Gradients (HOG)
 
 Histogram of oriented gradients (HOG) is a feature descriptor used to detect objects in computer vision and image processing. The HOG descriptor technique counts occurrences of gradient orientation in localized portions of an image - detection window, or region of interest (ROI).
 
-## Supporting Vector Machine
+### Supporting Vector Machine
 The objective of the support vector machine algorithm is to find a hyperplane in an N-dimensional space(N — the number of features) that distinctly classifies the data points.
 Loss Function:
 <p align="center">
   <img width="50%" src="https://miro.medium.com/max/1056/1*GQAd28bK8LKOL2kOOFY-tg.png">
 </p> 
 
-# K - Nearest Neighbors
+### K - Nearest Neighbors
 KNN (K - Nearest Neighbors) is one of many (supervised learning) algorithms used in data mining and machine learning, it’s a classifier algorithm where the learning is based “how similar” is a data (a vector) from other .
 
 ## Installation
