@@ -1,10 +1,36 @@
-# Fruit_Classification
+# Fruit Classification 
 
 Dataset: Train and test images splited  77%, 33% of Apples, Mangoes and Oranges
+Two approaches for comparing results: KNN and Supporting Vector Machine for classifing the Fruits. Before that we used some image processing for making the results of the classification better. For that thresholding and Rescaling the Image Intensity were used.
 
-## Preprocessing: thresholding and Rescaling Intensity
+The results were: 
+- KNN: No preprocessing, precission of 88.33% and with Preprocessing 89.39%
+- VSM: No preprocessing, precission of 92.42% and with Preprocessing 98.48%
+
+<p align="center">
+  <img width="40%" src="https://github.com/lafifii/Fruit_Classification/blob/master/images/no_pre.png">
+  <img width="40%" src="https://github.com/lafifii/Fruit_Classification/blob/master/images/yes_pre.png">
+</p> 
+
+
+Now, some theory of the things used
+## Preprocessing: Thresholding and Rescaling Intensity
 
 The input to a thresholding operation is typically a grayscale or color image. In the simplest implementation, the output is a binary image representing the segmentation. Black pixels correspond to background and white pixels correspond to foreground (or vice versa). In simple implementations, the segmentation is determined by a single parameter known as the intensity threshold. In a single pass, each pixel in the image is compared with this threshold. If the pixel's intensity is higher than the threshold, the pixel is set to, say, white in the output. If it is less than the threshold, it is set to black.
+
+## Histogram of Oriented Gradients (HOG)
+
+Histogram of oriented gradients (HOG) is a feature descriptor used to detect objects in computer vision and image processing. The HOG descriptor technique counts occurrences of gradient orientation in localized portions of an image - detection window, or region of interest (ROI).
+
+## Supporting Vector Machine
+The objective of the support vector machine algorithm is to find a hyperplane in an N-dimensional space(N — the number of features) that distinctly classifies the data points.
+Loss Function:
+<p align="center">
+  <img width="50%" src="https://miro.medium.com/max/1056/1*GQAd28bK8LKOL2kOOFY-tg.png">
+</p> 
+
+# K - Nearest Neighbors
+KNN (K - Nearest Neighbors) is one of many (supervised learning) algorithms used in data mining and machine learning, it’s a classifier algorithm where the learning is based “how similar” is a data (a vector) from other .
 
 ## Installation
 
@@ -23,7 +49,6 @@ You should install **virtualenv** in your machine. Once Python is installed, use
 ```bash
 $ pip install virtualenv==16.1.0
 ```
-> We use version 16.1.0 since it exists some compatibility issues when packaging scripts with other versions of VirtualEnv
 
 ### Create a virtual environment
 Once **virtualenv** is installed, in the corresponding git repository folder, execute the command:
@@ -47,14 +72,6 @@ $ .venv\Scripts\activate
 ```
 
 ### Install python packages
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install python packages. You can install them directly by executing:
-
-```bash
-$ pip install the_package
-```
-
-If you are importing an existing project, it must have a *requirements.txt* file from which you can install all dependencies directly by executing:
 
 ```bash
 $ pip install -r requirements.txt
