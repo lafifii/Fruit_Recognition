@@ -1,25 +1,23 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
-
 import pandas as pd
 
 import glob
+from skimage.filters import threshold_yen
+from skimage.exposure import rescale_intensity
 
-def showImg(img, name):
-    plt.axis("off")
-    plt.title(name)
-    plt.imshow(img)
-    plt.show()
+
+
 
 def _hog(img, B):
+  c = img.shape[0]//2
+  f = img.shape[1]//2
   gx = cv2.Sobel(img, cv2.CV_32F, 1, 0)
   gy = cv2.Sobel(img, cv2.CV_32F, 0, 1)
   mag,ang = cv2.cartToPolar(gx, gy)
   bins = np.int32((ang*B)/(2*np.pi))
-  bin_cells = bins[:10,:10], bins[10:,:10], bins[:10,10:], bins[10:,10:]
-  mag_cells = mag[:10,:10], mag[10:,:10], mag[:10,10:], mag[10:,10:]
+  bin_cells = bins[:c,:c], bins[f:,:c], bins[:c,f:], bins[f:,f:]
+  mag_cells = mag[:c,:c], mag[f:,:c], mag[:c,f:], mag[f:,f:]
   hists = [np.bincount(b.ravel(), m.ravel(), B) for b,m in zip(bin_cells, mag_cells)]
   hist = np.hstack(hists)
   return hist
@@ -34,45 +32,36 @@ def hog(img, B):
   hist = np.concatenate((r,g,b))
   return hist
 
-def load_data(fruit, tipo, B, clase, testing):
+def load_data(fruit, tipo, B, clase, testing, flag):
     label=[]
     arr = []
     strr = "FruitsDB/"+fruit+"/" + tipo + "/*"
     for file_ in glob.glob(strr):
       img = cv2.imread(file_)
       img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-      h = hog(img, B)
       if(testing):
-        arr.append(h)
+        if(flag):
+          yen_threshold = threshold_yen(img)
+          bright = rescale_intensity(img, (0, yen_threshold), (0, 255))
+          h = hog(bright, B)
+          arr.append(h)
+        else:
+          h = hog(img, B)
+          arr.append(h)
       else:
         arr.append(img)
       label.append(clase)
    
     return arr,label
 
-def whole_train_data(tipo, B):
-  apples_data, apples_label = load_data('Apples', tipo, B, 0, 1)
-  mangoes_data, mangoes_label = load_data('Mangoes', tipo, B, 1, 1)
-  oranges_data, oranges_label = load_data('Oranges', tipo, B, 2, 1)
+def whole_train_data(tipo, B, flag):
+  apples_data, apples_label = load_data('Apples', tipo, B, 0, 1, flag)
+  mangoes_data, mangoes_label = load_data('Mangoes', tipo, B, 1, 1, flag)
+  oranges_data, oranges_label = load_data('Oranges', tipo, B, 2, 1, flag)
   data =np.concatenate((apples_data,mangoes_data,oranges_data))
   labels =np.concatenate((apples_label, mangoes_label, oranges_label))
   return data, labels
 
-data_train, labels_train = whole_train_data('Train', 16)
-data_test, labels_test = whole_train_data('Test', 16)
-
-data_test = np.vstack(data_test)
-data_train = np.vstack(data_train)
-labels_train = np.vstack(labels_train)
-labels_test = np.vstack(labels_test)
-
-data_train = np.float32(data_train)
-data_test = np.float32(data_test)
-
-print(data_train.shape)
-print(labels_train.shape)
-print(data_test.shape)
-print(labels_test.shape)
 
 def train_model(data_train, labels_train):
   svm = cv2.ml.SVM_create()
@@ -90,26 +79,27 @@ def get_precission(svm, test_target, test):
   correct = np.count_nonzero(mask)
   return (correct*100.0/result.size)
 
-svm = train_model(data_train, labels_train)
+def run_svm(flag):
+  data_train, labels_train = whole_train_data('Train', 16, flag)
+  data_test, labels_test = whole_train_data('Test', 16, flag)
 
-print("Precision del modelo es {}%".format(get_precission(svm, labels_test, data_test)))
+  data_test = np.vstack(data_test)
+  data_train = np.vstack(data_train)
+  labels_train = np.vstack(labels_train)
+  labels_test = np.vstack(labels_test)
 
-"""**Trying our model**"""
+  data_train = np.float32(data_train)
+  data_test = np.float32(data_test)
 
-classes = ["Apple", "Mango", "Orange"]
+  svm = train_model(data_train, labels_train)
 
-apples_data, apples_label = load_data('Apples', 'Test', 0, 0, 0)
-mangoes_data, mangoes_label = load_data('Mangoes', 'Test', 0, 1, 0)
-oranges_data, oranges_label = load_data('Oranges', 'Test', 0, 2, 0)
-data =np.concatenate((apples_data,mangoes_data,oranges_data))
+  classes = ["Apples", "Mangoes", "Oranges"]
 
-def try_predictor(data, data_test,x_):
-  img = data[x_]
-  result = int(svm.predict(data_test[x_].reshape(1,192))[1][0][0])
-  result = classes[result]
-  showImg(img, result)
+  apples_data, apples_label = load_data('Apples', 'Test', 0, 0, 0, flag)
+  mangoes_data, mangoes_label = load_data('Mangoes', 'Test', 0, 1, 0, flag)
+  oranges_data, oranges_label = load_data('Oranges', 'Test', 0, 2, 0, flag)
+  data =np.concatenate((apples_data,mangoes_data,oranges_data))
 
-from random import seed
-from random import randint  
-x_ = randint(0, data.shape[0])
-try_predictor(data, data_test, x_)
+  ans = [get_precission(svm, labels_test, data_test) , data, data_test, svm]
+  return ans , classes
+
