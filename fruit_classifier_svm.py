@@ -6,8 +6,8 @@ import glob
 from skimage.filters import threshold_yen
 from skimage.exposure import rescale_intensity
 
-
-
+# tipo : type of fruit 
+# clase : class [0,1,2..]  
 
 def _hog(img, B):
   c = img.shape[0]//2
@@ -23,6 +23,10 @@ def _hog(img, B):
   return hist
 
 def hog(img, B):
+  """ 
+    instead of having one channel when using black and white, we need to have one for every channel rgb
+    so that is what we are doing and then doing a hog for each channel and then concatenate every hog in one big histogram
+  """
   r = img[:, :, 0]
   g = img[:, :, 1]
   b = img[:, :, 2]
@@ -55,11 +59,24 @@ def load_data(fruit, tipo, B, clase, testing, flag):
     return arr,label
 
 def whole_train_data(tipo, B, flag):
+  """ In order to add other fruits just do this for it: Example if you want strawberrys you will need to do:
+     strawberrys_data, strawberrys_label = load_data
+    ( Name of the Extension of the folder in FruitsDB, 
+      type : Send either 'Test' or 'Train' for the folder name,
+      B: number of pixels, we use 16,
+      Class: 0, 1 , 2 ... the way you index the fruits,
+      testing: Send true if this is the Test set or false if it is the Train set)
+      flag: Send true if you want the image with tresholding applied and false if not)
+      Just guide yourself from the main.py of this repo
+      Of course you will need to add the images in a folder in FruitsDB following the structure that it has now
+  """
   apples_data, apples_label = load_data('Apples', tipo, B, 0, 1, flag)
   mangoes_data, mangoes_label = load_data('Mangoes', tipo, B, 1, 1, flag)
   oranges_data, oranges_label = load_data('Oranges', tipo, B, 2, 1, flag)
+  # then just concatenate the data and the labels
   data =np.concatenate((apples_data,mangoes_data,oranges_data))
   labels =np.concatenate((apples_label, mangoes_label, oranges_label))
+  
   return data, labels
 
 
@@ -92,14 +109,15 @@ def run_svm(flag):
   data_test = np.float32(data_test)
 
   svm = train_model(data_train, labels_train)
-
+  # more fruits only add more classes here
   classes = ["Apples", "Mangoes", "Oranges"]
 
   apples_data, apples_label = load_data('Apples', 'Test', 0, 0, 0, flag)
   mangoes_data, mangoes_label = load_data('Mangoes', 'Test', 0, 1, 0, flag)
   oranges_data, oranges_label = load_data('Oranges', 'Test', 0, 2, 0, flag)
   data =np.concatenate((apples_data,mangoes_data,oranges_data))
-
+  
+  # For knowing how precisse our model was
   ans = [get_precission(svm, labels_test, data_test) , data, data_test, svm]
   return ans , classes
 
