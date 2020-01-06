@@ -76,3 +76,6 @@ $ .venv\Scripts\activate
 ```bash
 $ pip install -r requirements.txt
 ```
+
+## Adding more Fruits
+Just follow the comments added in the code, basically you need to add the images in the folder FruitsDB, then charge the data and labels apply the preprocessing to them and add them as the whole set of data.
